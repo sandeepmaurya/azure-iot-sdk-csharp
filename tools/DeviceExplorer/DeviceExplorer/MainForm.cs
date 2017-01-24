@@ -403,7 +403,7 @@ namespace DeviceExplorer
 
                 foreach (var eventData in events)
                 {
-                    var data = Encoding.UTF8.GetString(eventData.GetBytes());
+                    var data = ToHex(eventData.GetBytes());
                     var enqueuedTime = eventData.EnqueuedTimeUtc.ToLocalTime();
                     var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
 
@@ -437,7 +437,7 @@ namespace DeviceExplorer
 
                     if (eventData != null)
                     {
-                        var data = Encoding.UTF8.GetString(eventData.GetBytes());
+                        var data = ToHex(eventData.GetBytes());
                         var enqueuedTime = eventData.EnqueuedTimeUtc.ToLocalTime();
 
                         // Display only data from the selected device; otherwise, skip.
@@ -491,6 +491,16 @@ namespace DeviceExplorer
                 deviceIDsComboBoxForEvent.Enabled = true;
                 cancelMonitoringButton.Enabled = false;
             }
+        }
+
+        private static string ToHex(byte[] buff)
+        {
+            StringBuilder builder = new StringBuilder();
+            foreach (byte b in buff)
+            {
+                builder.AppendFormat("{0:X2}", b);
+            }
+            return builder.ToString();
         }
 
         private void dataMonitorButton_Click(object sender, EventArgs e)
