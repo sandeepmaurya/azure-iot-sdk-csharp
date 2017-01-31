@@ -108,32 +108,19 @@ namespace DeviceExplorer
             deviceMethodReturnValue.Status = "";
             deviceMethodReturnValue.Payload = "";
 
-            dynamic serviceClient = ServiceClient.CreateFromConnectionString(connString);
             try
             {
-                string assemblyClassName = "CloudToDeviceMethod";
-                Type typeFound = (from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                                  from assemblyType in assembly.GetTypes()
-                                  where assemblyType.Name == assemblyClassName
-                                  select assemblyType).FirstOrDefault();
-                if (typeFound == null)
+                var deviceMethod = new Microsoft.Azure.Devices.CloudToDeviceMethod(deviceMethodName)
                 {
-                    throw new Exception(messageDeviceTwinFunctionalityNotFound);
-                }
-                else
-                {
-                    object cloudToDeviceMethod = Activator.CreateInstance(typeFound, deviceMethodName, timeoutInSeconds);
-                    MethodInfo methodInfo_SetPayloadJson = cloudToDeviceMethod.GetType().GetMethod("SetPayloadJson");
-                    object[] parametersArray = new object[] { deviceMethodPayload };
-                    dynamic cloudToDeviceMethodInstance = methodInfo_SetPayloadJson.Invoke(cloudToDeviceMethod, parametersArray);
+                    ResponseTimeout = timeoutInSeconds
+                };
 
-                    dynamic result = await serviceClient.InvokeDeviceMethodAsync(deviceName, cloudToDeviceMethodInstance, cancellationToken);
-
-                    deviceMethodReturnValue.Status = result.Status;
-                    deviceMethodReturnValue.Payload = result.GetPayloadAsJson();
-
-                    isOK = true;
-                }
+                deviceMethod.SetPayloadJson(deviceMethodPayload);
+                var serviceClient = ServiceClient.CreateFromConnectionString(connString);
+                var response = await serviceClient.InvokeDeviceMethodAsync(deviceName, deviceMethod);
+                deviceMethodReturnValue.Status = response.Status.ToString();
+                deviceMethodReturnValue.Payload = response.GetPayloadAsJson();
+                isOK = true;
             }
             catch (Exception ex)
             {
