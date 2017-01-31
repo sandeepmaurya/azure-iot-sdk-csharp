@@ -124,6 +124,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="GDC.Telemetry.Helpers">
+      <HintPath>ExternalBinaries\GDC.Telemetry.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="GDC.Telemetry.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=95176946a5423488, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ExternalBinaries\GDC.Telemetry.Shared.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Azure.Amqp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.Amqp.2.0.3\lib\net45\Microsoft.Azure.Amqp.dll</HintPath>
       <Private>True</Private>
@@ -202,6 +209,10 @@
       <HintPath>..\packages\Validation.2.3.7\lib\dotnet\Validation.dll</HintPath>
       <Private>True</Private>
     </Reference>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="ExternalBinaries\GDC.Telemetry.Shared.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

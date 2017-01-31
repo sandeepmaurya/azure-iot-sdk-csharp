@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DeviceExplorer.Properties;
+using GDC.Telemetry.Shared.Poco.Core;
+using GDC.Telemetry.Shared.Poco.Enums;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Security;
 using Microsoft.ServiceBus.Messaging;
-using System.Reflection;
-using DeviceExplorer.Properties;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DeviceExplorer
 {
@@ -640,8 +644,7 @@ namespace DeviceExplorer
             string deviceId = deviceIDsComboBoxForDeviceMethod.SelectedItem.ToString();
 
             string methodName = cmbMethodName.Text;
-            string payload = methodPayloadTextBox.Text;
-            payload = "'" + payload + "'";
+            string payload = PrepareCommandJson();
 
             double timeout = System.Convert.ToDouble(callDeviceMethodNumericUpDown.Value);
 
@@ -652,9 +655,14 @@ namespace DeviceExplorer
             {
                 callDeviceMethodButton.Enabled = false;
                 callDeviceMethodCancelButton.Enabled = true;
-                DeviceMethodReturnValue deviceMethodReturnValue = await deviceMethod.CallDeviceMethod(methodName, payload, TimeSpan.FromSeconds(timeout), ctsForDeviceMethod.Token);
+                DeviceMethodReturnValue deviceMethodReturnValue = await deviceMethod.CallDeviceMethod(
+                    methodName,
+                    payload,
+                    TimeSpan.FromSeconds(timeout),
+                    ctsForDeviceMethod.Token);
+
                 returnStatusTextBox.Text = deviceMethodReturnValue.Status;
-                returnPayloadTextBox.Text = deviceMethodReturnValue.Payload;
+                ShowResult(deviceMethodReturnValue);
             }
             catch (Exception exc)
             {
@@ -665,6 +673,56 @@ namespace DeviceExplorer
                 callDeviceMethodButton.Enabled = true;
                 callDeviceMethodCancelButton.Enabled = false;
             }
+        }
+
+        private string PrepareCommandJson()
+        {
+            if (cmbMethodName.Text == echo)
+            {
+                return "'" + methodPayloadTextBox.Text + "'";
+            }
+
+            if (cmbMethodName.Text == transferParameter)
+            {
+                var frame = GetTransferParameterCommand();
+                byte[] commandPayload;
+                commandPayload = SerializeVariableFrameForTransferCommand(frame);
+                return "'" + Convert.ToBase64String(commandPayload) + "'";
+            }
+
+            throw new InvalidOperationException("Error preparing command json. Invalid method type.");
+        }
+
+        private void ShowResult(DeviceMethodReturnValue deviceMethodReturnValue)
+        {
+            if (cmbMethodName.Text == echo)
+            {
+                returnPayloadTextBox.Text = deviceMethodReturnValue.Payload;
+                return;
+            }
+
+            if (cmbMethodName.Text == transferParameter)
+            {
+                string jsonString = deviceMethodReturnValue.Payload;
+                var val = JValue.Parse(jsonString);
+                string base64Response = val.Value<string>();
+                StringBuilder builder = new StringBuilder();
+                builder.AppendLine("Base64 response");
+                builder.AppendLine(base64Response);
+                builder.AppendLine("----------");
+                builder.AppendLine("Response byte[]");
+                byte[] byteArrayResponse = Convert.FromBase64String(base64Response);
+                builder.AppendLine(ToHex(byteArrayResponse));
+                builder.AppendLine("----------");
+                builder.AppendLine("VariableParameterDataFrame:");
+                var framePayload = GDC.Telemetry.Helpers.Message.Core.Envelope.GetPayload(byteArrayResponse);
+                var frame = GDC.Telemetry.Helpers.Message.Core.VariableParameterDataFrameManager.Read(framePayload);
+                builder.AppendLine(JsonConvert.SerializeObject(frame, Formatting.Indented));
+                returnPayloadTextBox.Text = builder.ToString();
+                return;
+            }
+
+            throw new InvalidOperationException("Error parsing command response. Invalid method type.");
         }
 
         private void callDeviceMethodCancelButton_Click(object sender, EventArgs e)
@@ -900,8 +958,98 @@ namespace DeviceExplorer
             methodPayloadTextBox.Text = string.Empty;
             if (cmbMethodName.Text == echo)
             {
+                txtApplianceId.ReadOnly = true;
+                methodPayloadTextBox.ReadOnly = false;
                 methodPayloadTextBox.Text = Resources.EchoTemplate;
             }
+            if (cmbMethodName.Text == transferParameter)
+            {
+                txtApplianceId.ReadOnly = false;
+                methodPayloadTextBox.ReadOnly = true;
+                UpdatePayloadTextBoxForTransferCommand();
+            }
+        }
+
+        private void UpdatePayloadTextBoxForTransferCommand()
+        {
+            if (cmbMethodName.Text != transferParameter || string.IsNullOrWhiteSpace(txtApplianceId.Text))
+            {
+                return;
+            }
+
+            var frame = GetTransferParameterCommand();
+            byte[] commandPayload;
+            try
+            {
+                commandPayload = SerializeVariableFrameForTransferCommand(frame);
+            }
+            catch
+            {
+                MessageBox.Show(
+                    "Please ensure that the appliance id is in the format AA BB CCCC DDDD",
+                    "Serialization Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                return;
+            }
+
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("Byte[] data:");
+            builder.AppendLine(ToHex(commandPayload));
+            builder.AppendLine("-----------");
+            builder.AppendLine("Base64 payload:");
+            builder.AppendLine(Convert.ToBase64String(commandPayload));
+            builder.AppendLine("-----------");
+            builder.AppendLine("VariableParameterDataFrame:");
+            builder.AppendLine(JsonConvert.SerializeObject(frame, Formatting.Indented));
+            methodPayloadTextBox.Text = builder.ToString();
+        }
+
+        private static byte[] SerializeVariableFrameForTransferCommand(VariableParameterDataFrame frame)
+        {
+            var payload = GDC.Telemetry.Helpers.Message.Core.VariableParameterDataFrameManager.Write(frame);
+            return GDC.Telemetry.Helpers.Message.Core.Envelope.AddEnvelope(
+                payload,
+                GDC.Telemetry.Helpers.Message.Core.EEnvelopeType.ParameterDataFrame);
+        }
+
+        private VariableParameterDataFrame GetTransferParameterCommand()
+        {
+            List<Parameter> parameterList = new List<Parameter>();
+            var utcNow = DateTime.UtcNow;
+            parameterList.Add(new GDC.Telemetry.Shared.Poco.Appliances.HotWaterCylinder.ConfigurationParameter
+            {
+                ParameterSize = GDC.Telemetry.Shared.Constants.ParameterSize[EParameterID.Configuration],
+                ParameterId = EParameterID.Configuration,
+                ModifiedPower = 100,
+                DayOfWeek = (EDayOfWeek)Enum.Parse(typeof(EDayOfWeek), ((int)utcNow.DayOfWeek).ToString(CultureInfo.InvariantCulture)),
+                Day = utcNow.Day,
+                Month = utcNow.Month,
+                Year = int.Parse(utcNow.ToString("yy", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
+                Hours = utcNow.Hour,
+                Minutes = utcNow.Minute,
+                ParameterGdid = txtApplianceId.Text
+            });
+
+            parameterList.Add(new GDC.Telemetry.Shared.Poco.Appliances.HotWaterCylinder.StatusParameter
+            {
+                ParameterSize = GDC.Telemetry.Shared.Constants.ParameterSize[EParameterID.Unknown],
+                ParameterId = EParameterID.HWC_Status,
+                ParameterGdid = txtApplianceId.Text
+            });
+
+            return new VariableParameterDataFrame
+            {
+                SubsetCode = 0x01,
+                CompanyCode = 0x00,
+                GdId = txtApplianceId.Text,
+                Parameters = parameterList
+            };
+        }
+
+        private void txtApplianceId_Leave(object sender, EventArgs e)
+        {
+            UpdatePayloadTextBoxForTransferCommand();
         }
     }
 }
