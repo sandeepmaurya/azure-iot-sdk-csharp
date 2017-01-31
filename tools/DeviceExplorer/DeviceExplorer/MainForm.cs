@@ -10,6 +10,7 @@ using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Security;
 using Microsoft.ServiceBus.Messaging;
 using System.Reflection;
+using DeviceExplorer.Properties;
 
 namespace DeviceExplorer
 {
@@ -41,6 +42,8 @@ namespace DeviceExplorer
         private static CancellationTokenSource ctsForDeviceMethod;
 
         private const string DEFAULT_CONSUMER_GROUP = "$Default";
+        private readonly string echo = "echo";
+        private readonly string transferParameter = "transferParameter";
         #endregion
 
         public MainForm()
@@ -636,7 +639,7 @@ namespace DeviceExplorer
 
             string deviceId = deviceIDsComboBoxForDeviceMethod.SelectedItem.ToString();
 
-            string methodName = methodNameTextBox.Text;
+            string methodName = cmbMethodName.Text;
             string payload = methodPayloadTextBox.Text;
             payload = "'" + payload + "'";
 
@@ -890,6 +893,15 @@ namespace DeviceExplorer
         private void deviceTwinPropertiesBtn_Click(object sender, EventArgs e)
         {
             showDevicePropertiesToolStripMenuItem_Click(this, null);
+        }
+
+        private void cmbMethodName_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            methodPayloadTextBox.Text = string.Empty;
+            if (cmbMethodName.Text == echo)
+            {
+                methodPayloadTextBox.Text = Resources.EchoTemplate;
+            }
         }
     }
 }

@@ -59,5 +59,20 @@ namespace DeviceExplorer.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {
+        ///    &quot;methodName&quot;: &quot;echo&quot;,
+        ///    &quot;responseTimeoutInSeconds&quot;: 12,
+        ///    &quot;payload&quot;: {
+        ///        &quot;message&quot;: &quot;hello world&quot;
+        ///    }
+        ///}.
+        /// </summary>
+        internal static string EchoTemplate {
+            get {
+                return ResourceManager.GetString("EchoTemplate", resourceCulture);
+            }
+        }
     }
 }

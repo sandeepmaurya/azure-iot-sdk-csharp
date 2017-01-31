@@ -112,14 +112,14 @@
             this.callDeviceMethodButton = new System.Windows.Forms.Button();
             this.deviceIDsComboBoxForDeviceMethod = new System.Windows.Forms.ComboBox();
             this.methodPayloadTextBox = new System.Windows.Forms.TextBox();
-            this.methodNameTextBox = new System.Windows.Forms.TextBox();
             this.iotHubNameTextBoxForDeviceMethod = new System.Windows.Forms.TextBox();
             this.label19 = new System.Windows.Forms.Label();
-            this.label18 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.label23 = new System.Windows.Forms.Label();
+            this.cmbMethodName = new System.Windows.Forms.ComboBox();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -959,6 +959,8 @@
             // 
             // tabDeviceMethod
             // 
+            this.tabDeviceMethod.Controls.Add(this.cmbMethodName);
+            this.tabDeviceMethod.Controls.Add(this.label23);
             this.tabDeviceMethod.Controls.Add(this.callDeviceMethodCancelButton);
             this.tabDeviceMethod.Controls.Add(this.label22);
             this.tabDeviceMethod.Controls.Add(this.callDeviceMethodNumericUpDown);
@@ -969,10 +971,8 @@
             this.tabDeviceMethod.Controls.Add(this.callDeviceMethodButton);
             this.tabDeviceMethod.Controls.Add(this.deviceIDsComboBoxForDeviceMethod);
             this.tabDeviceMethod.Controls.Add(this.methodPayloadTextBox);
-            this.tabDeviceMethod.Controls.Add(this.methodNameTextBox);
             this.tabDeviceMethod.Controls.Add(this.iotHubNameTextBoxForDeviceMethod);
             this.tabDeviceMethod.Controls.Add(this.label19);
-            this.tabDeviceMethod.Controls.Add(this.label18);
             this.tabDeviceMethod.Controls.Add(this.label17);
             this.tabDeviceMethod.Controls.Add(this.label14);
             this.tabDeviceMethod.Controls.Add(this.label13);
@@ -1084,22 +1084,12 @@
             // 
             this.methodPayloadTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.methodPayloadTextBox.Location = new System.Drawing.Point(140, 141);
+            this.methodPayloadTextBox.Location = new System.Drawing.Point(140, 148);
             this.methodPayloadTextBox.Multiline = true;
             this.methodPayloadTextBox.Name = "methodPayloadTextBox";
-            this.methodPayloadTextBox.Size = new System.Drawing.Size(592, 180);
+            this.methodPayloadTextBox.Size = new System.Drawing.Size(592, 174);
             this.methodPayloadTextBox.TabIndex = 8;
             this.methodPayloadTextBox.Text = "MethodPayload";
-            // 
-            // methodNameTextBox
-            // 
-            this.methodNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.methodNameTextBox.Location = new System.Drawing.Point(140, 112);
-            this.methodNameTextBox.Name = "methodNameTextBox";
-            this.methodNameTextBox.Size = new System.Drawing.Size(592, 22);
-            this.methodNameTextBox.TabIndex = 7;
-            this.methodNameTextBox.Text = "MethodName";
             // 
             // iotHubNameTextBoxForDeviceMethod
             // 
@@ -1114,20 +1104,11 @@
             // label19
             // 
             this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(21, 140);
+            this.label19.Location = new System.Drawing.Point(21, 151);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(109, 16);
             this.label19.TabIndex = 4;
             this.label19.Text = "Method payload:";
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(21, 112);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(93, 16);
-            this.label18.TabIndex = 3;
-            this.label18.Text = "Method name:";
             // 
             // label17
             // 
@@ -1155,6 +1136,30 @@
             this.label13.Size = new System.Drawing.Size(143, 16);
             this.label13.TabIndex = 0;
             this.label13.Text = "Call Method on Device";
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(24, 124);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(93, 16);
+            this.label23.TabIndex = 19;
+            this.label23.Text = "Method name:";
+            // 
+            // cmbMethodName
+            // 
+            this.cmbMethodName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmbMethodName.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbMethodName.FormattingEnabled = true;
+            this.cmbMethodName.Items.AddRange(new object[] {
+            "echo",
+            "transferParameter"});
+            this.cmbMethodName.Location = new System.Drawing.Point(140, 118);
+            this.cmbMethodName.Name = "cmbMethodName";
+            this.cmbMethodName.Size = new System.Drawing.Size(592, 24);
+            this.cmbMethodName.TabIndex = 20;
+            this.cmbMethodName.SelectedIndexChanged += new System.EventHandler(this.cmbMethodName_SelectedIndexChanged);
             // 
             // MainForm
             // 
@@ -1270,7 +1275,6 @@
         private System.Windows.Forms.Button deviceTwinPropertiesBtn;
         private System.Windows.Forms.TabPage tabDeviceMethod;
         private System.Windows.Forms.Label label19;
-        private System.Windows.Forms.Label label18;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label13;
@@ -1279,7 +1283,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ValueColumn;
         private System.Windows.Forms.ComboBox deviceIDsComboBoxForDeviceMethod;
         private System.Windows.Forms.TextBox methodPayloadTextBox;
-        private System.Windows.Forms.TextBox methodNameTextBox;
         private System.Windows.Forms.Button callDeviceMethodButton;
         private System.Windows.Forms.TextBox returnPayloadTextBox;
         private System.Windows.Forms.TextBox returnStatusTextBox;
@@ -1288,6 +1291,8 @@
         private System.Windows.Forms.Label label22;
         private System.Windows.Forms.NumericUpDown callDeviceMethodNumericUpDown;
         private System.Windows.Forms.Button callDeviceMethodCancelButton;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.ComboBox cmbMethodName;
     }
 }
 
