@@ -640,19 +640,16 @@ namespace DeviceExplorer
         {
             returnStatusTextBox.Text = "";
             returnPayloadTextBox.Text = "";
-
-            string deviceId = deviceIDsComboBoxForDeviceMethod.SelectedItem.ToString();
-
-            string methodName = cmbMethodName.Text;
-            string payload = PrepareCommandJson();
-
-            double timeout = System.Convert.ToDouble(callDeviceMethodNumericUpDown.Value);
-
-            DeviceTwinAndMethod deviceMethod = new DeviceTwinAndMethod(activeIoTHubConnectionString, deviceId);
-
             ctsForDeviceMethod = new CancellationTokenSource();
+
             try
             {
+                string deviceId = deviceIDsComboBoxForDeviceMethod.SelectedItem.ToString();
+                string methodName = cmbMethodName.Text;
+                double timeout = System.Convert.ToDouble(callDeviceMethodNumericUpDown.Value);
+                DeviceTwinAndMethod deviceMethod = new DeviceTwinAndMethod(activeIoTHubConnectionString, deviceId);
+
+                string payload = PrepareCommandJson();
                 callDeviceMethodButton.Enabled = false;
                 callDeviceMethodCancelButton.Enabled = true;
                 DeviceMethodReturnValue deviceMethodReturnValue = await deviceMethod.CallDeviceMethod(
@@ -703,20 +700,24 @@ namespace DeviceExplorer
 
             if (cmbMethodName.Text == transferParameter)
             {
-                string jsonString = deviceMethodReturnValue.Payload;
-                var val = JValue.Parse(jsonString);
-                string base64Response = val.Value<string>();
                 StringBuilder builder = new StringBuilder();
-                builder.AppendLine("Base64 response");
-                builder.AppendLine(base64Response);
+                builder.AppendLine("Response from gateway:");
+                builder.AppendLine(deviceMethodReturnValue.Payload);
+                returnPayloadTextBox.Text = builder.ToString();
+
+                JObject responseObject = JObject.Parse(deviceMethodReturnValue.Payload);
+                var payload = responseObject["payload"] as JObject;
+                var frameString = payload["frame"].Value<string>();
+                byte[] byteArrayResponse = Convert.FromBase64String(frameString);
                 builder.AppendLine("----------");
-                builder.AppendLine("Response byte[]");
-                byte[] byteArrayResponse = Convert.FromBase64String(base64Response);
+                builder.AppendLine("frame byte[]:");
                 builder.AppendLine(ToHex(byteArrayResponse));
-                builder.AppendLine("----------");
-                builder.AppendLine("VariableParameterDataFrame:");
+                returnPayloadTextBox.Text = builder.ToString();
+
                 var framePayload = GDC.Telemetry.Helpers.Message.Core.Envelope.GetPayload(byteArrayResponse);
                 var frame = GDC.Telemetry.Helpers.Message.Core.VariableParameterDataFrameManager.Read(framePayload);
+                builder.AppendLine("----------");
+                builder.AppendLine("VariableParameterDataFrame:");
                 builder.AppendLine(JsonConvert.SerializeObject(frame, Formatting.Indented));
                 returnPayloadTextBox.Text = builder.ToString();
                 return;
