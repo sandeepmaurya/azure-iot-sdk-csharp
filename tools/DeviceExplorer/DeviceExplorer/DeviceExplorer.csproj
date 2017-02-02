@@ -212,6 +212,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="ExternalBinaries\GDC.Telemetry.Helpers.dll" />
     <Content Include="ExternalBinaries\GDC.Telemetry.Shared.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
