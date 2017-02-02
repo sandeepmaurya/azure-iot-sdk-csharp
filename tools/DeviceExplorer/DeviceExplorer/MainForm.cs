@@ -705,8 +705,7 @@ namespace DeviceExplorer
                 builder.AppendLine(deviceMethodReturnValue.Payload);
                 returnPayloadTextBox.Text = builder.ToString();
 
-                JObject responseObject = JObject.Parse(deviceMethodReturnValue.Payload);
-                var payload = responseObject["payload"] as JObject;
+                JObject payload = JObject.Parse(deviceMethodReturnValue.Payload);
                 var frameString = payload["frame"].Value<string>();
                 byte[] byteArrayResponse = Convert.FromBase64String(frameString);
                 builder.AppendLine("----------");
